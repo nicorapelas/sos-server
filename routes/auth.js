@@ -7,11 +7,13 @@ const User = require('../models/User')
 const client = twilio(devKeys.twilioAccountSid, devKeys.twilioAuthToken)
 
 router.post('/request-otp', async (req, res) => {
+  console.log(req.body)
   try {
     const { phoneNumber } = req.body
     const verification = await client.verify.v2
       .services(devKeys.twilioVerifySid)
       .verifications.create({ to: phoneNumber, channel: 'sms' })
+    console.log(`verification:`, verification)
     res.json({ message: 'OTP sent successfully', status: verification.status })
     return
   } catch (error) {
