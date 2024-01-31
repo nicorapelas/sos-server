@@ -1,7 +1,5 @@
 const express = require('express')
 const router = express.Router()
-const jwt = require('jsonwebtoken')
-const devKeys = require('../config/devKeys')
 const User = require('../models/User')
 const requireAuth = require('../middlewares/requireAuth')
 
@@ -10,7 +8,6 @@ router.get('/fetch-user', requireAuth, (req, res) => {
 })
 
 router.patch('/edit-user', requireAuth, async (req, res) => {
-  console.log(req.body)
   const { username } = req.body
   try {
     const user = await User.findByIdAndUpdate(
