@@ -3,7 +3,7 @@ const router = express.Router()
 const Community = require('../models/Community')
 const requireAuth = require('../middlewares/requireAuth')
 
-router.get('/fetch-community', requireAuth, async (req, res) => {
+router.get('/fetch', requireAuth, async (req, res) => {
   try {
     const community = await Community.find({ _user: req.user._id })
     res.json(community)
@@ -13,9 +13,15 @@ router.get('/fetch-community', requireAuth, async (req, res) => {
   }
 })
 
-router.post('/create-community', async (req, res) => {
+router.post('/create', async (req, res) => {
   const { name, adminId } = req.body
+
   try {
+    const nameCheck = await Community.find(name)
+    if (nameCheck.length > 0) {
+      res.json({ error: `The name "${name}", is already taken` })
+      return
+    }
     const community = new Community({
       _user: req.user.id,
       name,

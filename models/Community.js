@@ -10,11 +10,7 @@ const CommunitySchema = new Schema({
     type: String,
     required: true,
   },
-  identifier: {
-    type: String,
-    required: true,
-  },
-  admin: {
+  adminId: {
     type: String,
     required: true,
   },
