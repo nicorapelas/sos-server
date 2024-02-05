@@ -13,19 +13,18 @@ router.get('/fetch', requireAuth, async (req, res) => {
   }
 })
 
-router.post('/create', async (req, res) => {
-  const { name, adminId } = req.body
-
+router.post('/create', requireAuth, async (req, res) => {
+  const { name } = req.body
   try {
-    const nameCheck = await Community.find(name)
+    const nameCheck = await Community.find({ name })
     if (nameCheck.length > 0) {
       res.json({ error: `The name "${name}", is already taken` })
       return
     }
     const community = new Community({
-      _user: req.user.id,
+      _user: req.user._id,
       name,
-      adminId,
+      adminId: req.user._id,
     })
     await community.save()
     res.json(community)
