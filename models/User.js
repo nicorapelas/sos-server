@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const UserCommunitySchema = require('./UserCommunity')
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -24,6 +25,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
+  community: [UserCommunitySchema],
   created: {
     type: Date,
     default: Date.now,
