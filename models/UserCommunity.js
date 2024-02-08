@@ -3,7 +3,8 @@ const Schema = mongoose.Schema
 
 const UserCommunitySchema = new Schema({
   name: String,
-  id: String,
+  commmunityId: String,
+  adminId: String,
 })
 
 module.exports = UserCommunitySchema
