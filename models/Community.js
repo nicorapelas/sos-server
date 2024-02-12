@@ -14,6 +14,10 @@ const CommunitySchema = new Schema({
     type: String,
     required: true,
   },
+  avatar: {
+    type: String,
+    default: '',
+  },
   date: {
     type: Date,
     default: Date.now,

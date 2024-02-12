@@ -28,7 +28,7 @@ router.post('/create', requireAuth, async (req, res) => {
       adminId: req.user._id,
     })
     await community.save()
-    const user = await User.findByIdAndUpdate(
+    await User.findByIdAndUpdate(
       req.user._id,
       {
         $push: {
@@ -41,7 +41,11 @@ router.post('/create', requireAuth, async (req, res) => {
       },
       { new: true }
     )
-    res.json(community)
+    res.json({
+      _id: community._id,
+      communityId: community._id,
+      name: community.name,
+    })
     return
   } catch (error) {
     console.log(error)
@@ -58,5 +62,20 @@ router.post('/fetch-selected', requireAuth, async (req, res) => {
     return
   }
 })
+
+router.post(
+  '/fetch-community-selected-admin',
+  requireAuth,
+  async (req, res) => {
+    const { adminId } = req.body
+    try {
+      const user = await User.findById({ _id: adminId })
+      res.json(user)
+    } catch (error) {
+      console.log(error)
+      return
+    }
+  }
+)
 
 module.exports = router
