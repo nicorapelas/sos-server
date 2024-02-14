@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const Community = require('../models/Community')
 const User = require('../models/User')
+const CommunityInvite = require('../models/CommunityInvite')
 const requireAuth = require('../middlewares/requireAuth')
 
 router.get('/fetch', requireAuth, async (req, res) => {
@@ -77,5 +78,28 @@ router.post(
     }
   }
 )
+
+router.post('/create-community-invite', requireAuth, async (req, res) => {
+  const { communityId } = req.body
+  const randomNumber = '81505220'
+  // const randomNumber =
+  //   Math.floor(Math.random() * (99999999 - 10000000 + 1)) + 10000000
+  try {
+    const checkNumber = await CommunityInvite.find({ pin: randomNumber })
+    if (checkNumber.length > 0) {
+      res.json({ retry: true })
+      return
+    }
+    const communityInvite = new CommunityInvite({
+      pin: randomNumber,
+      communityId,
+    })
+    await communityInvite.save()
+    res.json(communityInvite)
+  } catch (error) {
+    console.log(error)
+    return
+  }
+})
 
 module.exports = router
