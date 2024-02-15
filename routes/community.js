@@ -81,9 +81,8 @@ router.post(
 
 router.post('/create-community-invite', requireAuth, async (req, res) => {
   const { communityId } = req.body
-  const randomNumber = '81505220'
-  // const randomNumber =
-  //   Math.floor(Math.random() * (99999999 - 10000000 + 1)) + 10000000
+  const randomNumber =
+    Math.floor(Math.random() * (99999999 - 10000000 + 1)) + 10000000
   try {
     const checkNumber = await CommunityInvite.find({ pin: randomNumber })
     if (checkNumber.length > 0) {
