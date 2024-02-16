@@ -101,4 +101,17 @@ router.post('/create-community-invite', requireAuth, async (req, res) => {
   }
 })
 
+router.post('/fetch-community-invite', requireAuth, async (req, res) => {
+  const { communityId } = req.body
+  try {
+    const communityInvite = await CommunityInvite.findOne({
+      communityId: communityId,
+    })
+    res.json(communityInvite)
+  } catch (error) {
+    console.log(error)
+    return
+  }
+})
+
 module.exports = router
