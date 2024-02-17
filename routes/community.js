@@ -114,4 +114,31 @@ router.post('/fetch-community-invite', requireAuth, async (req, res) => {
   }
 })
 
+// router.post('/fetch-community-invite', requireAuth, async (req, res) => {
+//   const { communityId } = req.body
+//   try {
+//     const communityInvite = await CommunityInvite.findOne({
+//       communityId: communityId,
+//     })
+//     if (communityInvite && communityInvite.date) {
+//       const inviteDate = new Date(communityInvite.date)
+//       const currentDate = new Date()
+//       const differenceInHours = (currentDate - inviteDate) / (1000 * 60 * 60)
+//       if (differenceInHours > 24) {
+//         return res
+//           .status(400)
+//           .json({ message: 'Invite is older than 24 hours' })
+//       }
+//     }
+//     res.json(communityInvite)
+//   } catch (error) {
+//     console.log(error)
+//     res
+//       .status(500)
+//       .json({
+//         message: 'An error occurred while fetching the community invite.',
+//       })
+//   }
+// })
+
 module.exports = router
