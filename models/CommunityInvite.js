@@ -14,6 +14,14 @@ const CommunityInviteSchema = new Schema({
     type: String,
     required: true,
   },
+  adminId: {
+    type: String,
+    required: true,
+  },
+  name: {
+    type: String,
+    required: true,
+  },
   date: {
     type: Date,
     default: Date.now,

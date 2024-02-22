@@ -101,19 +101,6 @@ router.post('/create-community-invite', requireAuth, async (req, res) => {
   }
 })
 
-// router.post('/fetch-community-invite', requireAuth, async (req, res) => {
-//   const { communityId } = req.body
-//   try {
-//     const communityInvite = await CommunityInvite.findOne({
-//       communityId: communityId,
-//     })
-//     res.json(communityInvite)
-//   } catch (error) {
-//     console.log(error)
-//     return
-//   }
-// })
-
 router.post('/fetch-community-invite', requireAuth, async (req, res) => {
   const { communityId } = req.body
   try {
@@ -136,5 +123,98 @@ router.post('/fetch-community-invite', requireAuth, async (req, res) => {
     res.json(error)
   }
 })
+
+router.post('/join-community', requireAuth, async (req, res) => {
+  const { pin } = req.body
+  try {
+    const communityInvite = await CommunityInvite.findOne({ pin })
+    if (!communityInvite) {
+      res.json({ error: 'pin invalid, or expired' })
+      return
+    }
+    if (communityInvite && communityInvite.date) {
+      const inviteDate = new Date(communityInvite.date)
+      const currentDate = new Date()
+      const differenceInHours = (currentDate - inviteDate) / (1000 * 60 * 60)
+      if (differenceInHours > 24) {
+        await CommunityInvite.findByIdAndDelete(communityInvite._id)
+        res.json({ error: 'pin invalid, or expired' })
+        return
+      } else {
+        // Fetch the user object
+        const user = await User.findById(req.user._id)
+        // Check if the user is already a member of the community
+        const isMember = user.community.some(
+          (community) => community.communityId === communityInvite.communityId
+        )
+        if (isMember) {
+          res.json({ error: 'User is already a member of the community.' })
+          return
+        } else {
+          await User.findByIdAndUpdate(
+            req.user._id,
+            {
+              $push: {
+                community: {
+                  name: community.name,
+                  communityId: community._id,
+                  adminId: community.adminId,
+                },
+              },
+            },
+            { new: true }
+          )
+          // Logic to add user to the community if not already a member
+          // This could involve updating the User document to add the community
+          // to their list, and potentially other business logic as needed.
+
+          // Example: Adding communityInvite details to the user's community array
+          // user.community.push({
+          //   name: communityInvite.name, // Assuming the CommunityInvite contains a name field
+          //   communityId: communityInvite.communityId,
+          //   adminId: req.user._id, // or another appropriate field
+          // });
+          // await user.save(); // Save the updated user object
+
+          res.json(communityInvite) // or another appropriate response
+        }
+      }
+    }
+  } catch (error) {
+    console.log(error)
+    res
+      .status(500)
+      .json({ error: 'An error occurred while joining the community.' })
+  }
+})
+
+// router.post('/join-community', requireAuth, async (req, res) => {
+//   const { pin } = req.body
+//   try {
+//     const communityInvite = await CommunityInvite.findOne({ pin })
+//     if (!communityInvite) {
+//       res.json({ error: 'pin invalid, or expired' })
+//       return
+//     }
+//     if (communityInvite && communityInvite.date) {
+//       const inviteDate = new Date(communityInvite.date)
+//       const currentDate = new Date()
+//       const differenceInHours = (currentDate - inviteDate) / (1000 * 60 * 60)
+//       if (differenceInHours > 24) {
+//         await CommunityInvite.findByIdAndDelete(communityInvite._id)
+//         res.json({ error: 'pin invalid, or expired' })
+//         return
+//       } else {
+//         const user = await User.findByIdAndUpdate(req.user._id, {
+
+//         })
+//         res.json(communityInvite)
+//       }
+//     }
+//   } catch (error) {
+//     console.log(error)
+//     return
+//   }
+// })
 
 module.exports = router
