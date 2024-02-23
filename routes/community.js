@@ -80,7 +80,7 @@ router.post(
 )
 
 router.post('/create-community-invite', requireAuth, async (req, res) => {
-  const { communityId } = req.body
+  const { communityId, name, adminId } = req.body
   const randomNumber =
     Math.floor(Math.random() * (99999999 - 10000000 + 1)) + 10000000
   try {
@@ -92,6 +92,8 @@ router.post('/create-community-invite', requireAuth, async (req, res) => {
     const communityInvite = new CommunityInvite({
       pin: randomNumber,
       communityId,
+      name,
+      adminId,
     })
     await communityInvite.save()
     res.json(communityInvite)
@@ -151,32 +153,21 @@ router.post('/join-community', requireAuth, async (req, res) => {
           res.json({ error: 'User is already a member of the community.' })
           return
         } else {
-          await User.findByIdAndUpdate(
+          const updatedUser = await User.findByIdAndUpdate(
             req.user._id,
             {
               $push: {
                 community: {
-                  name: community.name,
-                  communityId: community._id,
-                  adminId: community.adminId,
+                  name: communityInvite.name,
+                  communityId: communityInvite.communityId,
+                  adminId: communityInvite.adminId,
                 },
               },
             },
             { new: true }
           )
-          // Logic to add user to the community if not already a member
-          // This could involve updating the User document to add the community
-          // to their list, and potentially other business logic as needed.
-
-          // Example: Adding communityInvite details to the user's community array
-          // user.community.push({
-          //   name: communityInvite.name, // Assuming the CommunityInvite contains a name field
-          //   communityId: communityInvite.communityId,
-          //   adminId: req.user._id, // or another appropriate field
-          // });
-          // await user.save(); // Save the updated user object
-
-          res.json(communityInvite) // or another appropriate response
+          // not sure
+          res.json(updatedUser)
         }
       }
     }
