@@ -29,7 +29,7 @@ router.post('/create', requireAuth, async (req, res) => {
       adminId: req.user._id,
     })
     await community.save()
-    await User.findByIdAndUpdate(
+    const updatedUser = await User.findByIdAndUpdate(
       req.user._id,
       {
         $push: {
@@ -43,9 +43,8 @@ router.post('/create', requireAuth, async (req, res) => {
       { new: true }
     )
     res.json({
-      _id: community._id,
-      communityId: community._id,
-      name: community.name,
+      success: 'communityCreatedSuccefully',
+      communityList: updatedUser.community,
     })
     return
   } catch (error) {
@@ -143,9 +142,7 @@ router.post('/join-community', requireAuth, async (req, res) => {
         res.json({ error: 'pin invalid, or expired' })
         return
       } else {
-        // Fetch the user object
         const user = await User.findById(req.user._id)
-        // Check if the user is already a member of the community
         const isMember = user.community.some(
           (community) => community.communityId === communityInvite.communityId
         )
@@ -166,8 +163,10 @@ router.post('/join-community', requireAuth, async (req, res) => {
             },
             { new: true }
           )
-          // not sure
-          res.json(updatedUser)
+          res.json({
+            success: 'joinedSuccessfully',
+            communityList: updatedUser.community,
+          })
         }
       }
     }
@@ -178,34 +177,5 @@ router.post('/join-community', requireAuth, async (req, res) => {
       .json({ error: 'An error occurred while joining the community.' })
   }
 })
-
-// router.post('/join-community', requireAuth, async (req, res) => {
-//   const { pin } = req.body
-//   try {
-//     const communityInvite = await CommunityInvite.findOne({ pin })
-//     if (!communityInvite) {
-//       res.json({ error: 'pin invalid, or expired' })
-//       return
-//     }
-//     if (communityInvite && communityInvite.date) {
-//       const inviteDate = new Date(communityInvite.date)
-//       const currentDate = new Date()
-//       const differenceInHours = (currentDate - inviteDate) / (1000 * 60 * 60)
-//       if (differenceInHours > 24) {
-//         await CommunityInvite.findByIdAndDelete(communityInvite._id)
-//         res.json({ error: 'pin invalid, or expired' })
-//         return
-//       } else {
-//         const user = await User.findByIdAndUpdate(req.user._id, {
-
-//         })
-//         res.json(communityInvite)
-//       }
-//     }
-//   } catch (error) {
-//     console.log(error)
-//     return
-//   }
-// })
 
 module.exports = router

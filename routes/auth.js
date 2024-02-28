@@ -7,7 +7,6 @@ const User = require('../models/User')
 const client = twilio(devKeys.twilioAccountSid, devKeys.twilioAuthToken)
 
 router.post('/request-otp', async (req, res) => {
-  console.log(req.body)
   try {
     const { phoneNumber } = req.body
     const verification = await client.verify.v2
@@ -66,6 +65,11 @@ router.post('/verify-otp', async (req, res) => {
     res.json({ error: 'Failed to verify OTP' })
     return
   }
+})
+
+router.post('/email-signin', async (req, res) => {
+  console.log(req.body)
+  res.json(req.body)
 })
 
 module.exports = router
