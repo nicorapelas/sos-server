@@ -4,9 +4,10 @@ const twilio = require('twilio')
 const jwt = require('jsonwebtoken')
 const devKeys = require('../config/devKeys')
 const User = require('../models/User')
+const EmailOtp = require('../models/EmailOtp')
 const client = twilio(devKeys.twilioAccountSid, devKeys.twilioAuthToken)
 
-router.post('/request-otp', async (req, res) => {
+router.post('/request-otp-sms', async (req, res) => {
   try {
     const { phoneNumber } = req.body
     const verification = await client.verify.v2
@@ -22,7 +23,7 @@ router.post('/request-otp', async (req, res) => {
   }
 })
 
-router.post('/verify-otp', async (req, res) => {
+router.post('/verify-otp-sms', async (req, res) => {
   try {
     const { phoneNumber, otpCode } = req.body
     const verification_check = await client.verify.v2
@@ -67,9 +68,21 @@ router.post('/verify-otp', async (req, res) => {
   }
 })
 
-router.post('/email-signin', async (req, res) => {
-  console.log(req.body)
-  res.json(req.body)
+router.post('/request-otp-email', async (req, res) => {
+  const { email } = req.body
+  const user = await User.findOne({ emailAddress: email })
+  if (user) {
+    res.json({ error: 'email address already registered' })
+    return
+  }
+  const randomNumber =
+    Math.floor(Math.random() * (99999999 - 10000000 + 1)) + 10000000
+  // Send otp email here...
+  const emailOtp = new EmailOtp({
+    email,
+    otp: randomNumber,
+  })
+  await emailOtp.save()
 })
 
 module.exports = router
