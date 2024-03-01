@@ -1,11 +1,52 @@
 const express = require('express')
 const router = express.Router()
+const path = require('path')
 const twilio = require('twilio')
 const jwt = require('jsonwebtoken')
+const nodemailer = require('nodemailer')
+var hbs = require('nodemailer-express-handlebars')
 const devKeys = require('../config/devKeys')
 const User = require('../models/User')
 const EmailOtp = require('../models/EmailOtp')
 const client = twilio(devKeys.twilioAccountSid, devKeys.twilioAuthToken)
+
+// Nodemailer Handlebars
+const handlebarOptions = {
+  viewEngine: {
+    extName: '.handlebars',
+    partialsDir: path.resolve('./templates/mailTemplates'),
+    defaultLayout: false,
+  },
+  viewPath: path.resolve('./templates/mailTemplates'),
+  extName: '.handlebars',
+}
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: devKeys.google.authenticateUser,
+    pass: devKeys.google.authenticatePassword,
+  },
+})
+transporter.use('compile', hbs(handlebarOptions))
+// Register mailer options
+mailManRegister = (email, otp) => {
+  const mailOptionsRegister = {
+    from: 'nicorapelas@sos.com',
+    to: email,
+    subject: 'SOS - User authentication',
+    template: 'emailOtpTemplate',
+    context: {
+      otp,
+    },
+  }
+  transporter.sendMail(mailOptionsRegister, (error, info) => {
+    if (error) {
+      console.log(error)
+    } else {
+      console.log('Email sent: ' + info.response)
+    }
+  })
+}
 
 router.post('/request-otp-sms', async (req, res) => {
   try {
@@ -82,7 +123,9 @@ router.post('/request-otp-email', async (req, res) => {
     email,
     otp: randomNumber,
   })
-  await emailOtp.save()
+  mailManRegister(email)
+  // await emailOtp.save()
+  res.json(emailOtp)
 })
 
 module.exports = router
