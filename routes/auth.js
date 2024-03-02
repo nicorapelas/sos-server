@@ -118,12 +118,11 @@ router.post('/request-otp-email', async (req, res) => {
   }
   const randomNumber =
     Math.floor(Math.random() * (99999999 - 10000000 + 1)) + 10000000
-  // Send otp email here...
   const emailOtp = new EmailOtp({
     email,
-    otp: randomNumber,
+    otp: randomNumber, // Use the generated random number here
   })
-  mailManRegister(email)
+  mailManRegister(email, emailOtp.otp) // Make sure to pass the actual OTP value
   // await emailOtp.save()
   res.json(emailOtp)
 })
