@@ -29,21 +29,26 @@ const transporter = nodemailer.createTransport({
 })
 transporter.use('compile', hbs(handlebarOptions))
 // Register mailer options
-mailManRegister = (email, otp) => {
+mailManRegister = (email, otp, formattedOtp) => {
   const mailOptionsRegister = {
     from: 'nicorapelas@sos.com',
     to: email,
     subject: 'SOS - User authentication',
     template: 'emailOtpTemplate',
     context: {
-      otp,
+      otp: formattedOtp,
     },
   }
-  transporter.sendMail(mailOptionsRegister, (error, info) => {
+  transporter.sendMail(mailOptionsRegister, async (error, info) => {
     if (error) {
       console.log(error)
     } else {
       console.log('Email sent: ' + info.response)
+      const emailOtp = new EmailOtp({
+        email,
+        otp,
+      })
+      await emailOtp.save()
     }
   })
 }
@@ -116,15 +121,13 @@ router.post('/request-otp-email', async (req, res) => {
     res.json({ error: 'email address already registered' })
     return
   }
-  const randomNumber =
-    Math.floor(Math.random() * (99999999 - 10000000 + 1)) + 10000000
-  const emailOtp = new EmailOtp({
-    email,
-    otp: randomNumber, // Use the generated random number here
-  })
-  mailManRegister(email, emailOtp.otp) // Make sure to pass the actual OTP value
-  // await emailOtp.save()
-  res.json(emailOtp)
+  const otp = Math.floor(Math.random() * (99999999 - 10000000 + 1)) + 10000000
+  const formattedOtp = otp
+    .toString()
+    .match(/.{1,2}/g)
+    .join(' ')
+  mailManRegister(email, otp.toString(), formattedOtp) // Make sure to pass the actual OTP value as a string
+  res.json({ message: 'OTP sent successfully' })
 })
 
 module.exports = router
