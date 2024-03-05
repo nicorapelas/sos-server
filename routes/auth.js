@@ -10,49 +10,6 @@ const User = require('../models/User')
 const EmailOtp = require('../models/EmailOtp')
 const client = twilio(devKeys.twilioAccountSid, devKeys.twilioAuthToken)
 
-// Nodemailer Handlebars
-const handlebarOptions = {
-  viewEngine: {
-    extName: '.handlebars',
-    partialsDir: path.resolve('./templates/mailTemplates'),
-    defaultLayout: false,
-  },
-  viewPath: path.resolve('./templates/mailTemplates'),
-  extName: '.handlebars',
-}
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: devKeys.google.authenticateUser,
-    pass: devKeys.google.authenticatePassword,
-  },
-})
-transporter.use('compile', hbs(handlebarOptions))
-// Register mailer options
-mailManRegister = (email, otp, formattedOtp) => {
-  const mailOptionsRegister = {
-    from: 'nicorapelas@sos.com',
-    to: email,
-    subject: 'SOS - User authentication',
-    template: 'emailOtpTemplate',
-    context: {
-      otp: formattedOtp,
-    },
-  }
-  transporter.sendMail(mailOptionsRegister, async (error, info) => {
-    if (error) {
-      console.log(error)
-    } else {
-      console.log('Email sent: ' + info.response)
-      const emailOtp = new EmailOtp({
-        email,
-        otp,
-      })
-      await emailOtp.save()
-    }
-  })
-}
-
 router.post('/request-otp-sms', async (req, res) => {
   try {
     const { phoneNumber } = req.body
@@ -114,6 +71,49 @@ router.post('/verify-otp-sms', async (req, res) => {
   }
 })
 
+// Nodemailer Handlebars
+const handlebarOptions = {
+  viewEngine: {
+    extName: '.handlebars',
+    partialsDir: path.resolve('./templates/mailTemplates'),
+    defaultLayout: false,
+  },
+  viewPath: path.resolve('./templates/mailTemplates'),
+  extName: '.handlebars',
+}
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: devKeys.google.authenticateUser,
+    pass: devKeys.google.authenticatePassword,
+  },
+})
+transporter.use('compile', hbs(handlebarOptions))
+// Register mailer options
+mailManRegister = (email, otp, formattedOtp) => {
+  const mailOptionsRegister = {
+    from: 'nicorapelas@sos.com',
+    to: email,
+    subject: 'SOS - User authentication',
+    template: 'emailOtpTemplate',
+    context: {
+      otp: formattedOtp,
+    },
+  }
+  transporter.sendMail(mailOptionsRegister, async (error, info) => {
+    if (error) {
+      console.log(error)
+    } else {
+      console.log('Email sent: ' + info.response)
+      const emailOtp = new EmailOtp({
+        email,
+        otp,
+      })
+      await emailOtp.save()
+    }
+  })
+}
+
 router.post('/request-otp-email', async (req, res) => {
   const { email } = req.body
   const user = await User.findOne({ emailAddress: email })
@@ -121,6 +121,10 @@ router.post('/request-otp-email', async (req, res) => {
     res.json({ error: 'email address already registered' })
     return
   }
+  const emailOtp = await EmailOtp.find({
+    email,
+  })
+  console.log(`yebo:`, emailOtp)
   const otp = Math.floor(Math.random() * (99999999 - 10000000 + 1)) + 10000000
   const formattedOtp = otp
     .toString()
