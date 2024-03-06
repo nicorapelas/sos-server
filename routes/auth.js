@@ -121,10 +121,13 @@ router.post('/request-otp-email', async (req, res) => {
     res.json({ error: 'email address already registered' })
     return
   }
-  const emailOtp = await EmailOtp.find({
+  const emailOtpCheck = await EmailOtp.findOne({
     email,
   })
-  console.log(`yebo:`, emailOtp)
+  if (emailOtpCheck) {
+    console.log(`hello:`, emailOtpCheck)
+    await EmailOtp.findByIdAndDelete({ _id: emailOtpCheck._id })
+  }
   const otp = Math.floor(Math.random() * (99999999 - 10000000 + 1)) + 10000000
   const formattedOtp = otp
     .toString()
