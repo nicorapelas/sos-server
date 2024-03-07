@@ -125,16 +125,15 @@ router.post('/request-otp-email', async (req, res) => {
     email,
   })
   if (emailOtpCheck) {
-    console.log(`hello:`, emailOtpCheck)
     await EmailOtp.findByIdAndDelete({ _id: emailOtpCheck._id })
   }
-  const otp = Math.floor(Math.random() * (99999999 - 10000000 + 1)) + 10000000
+  const otp = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000
   const formattedOtp = otp
     .toString()
     .match(/.{1,2}/g)
     .join(' ')
   mailManRegister(email, otp.toString(), formattedOtp) // Make sure to pass the actual OTP value as a string
-  res.json({ message: 'OTP sent successfully' })
+  res.json({ status: 'emailOtpSent' })
 })
 
 module.exports = router
