@@ -116,11 +116,6 @@ mailManRegister = (email, otp, formattedOtp) => {
 
 router.post('/request-otp-email', async (req, res) => {
   const { email } = req.body
-  const user = await User.findOne({ emailAddress: email })
-  if (user) {
-    res.json({ error: 'email address already registered' })
-    return
-  }
   const emailOtpCheck = await EmailOtp.findOne({
     email,
   })
@@ -134,6 +129,39 @@ router.post('/request-otp-email', async (req, res) => {
     .join(' ')
   mailManRegister(email, otp.toString(), formattedOtp) // Make sure to pass the actual OTP value as a string
   res.json({ status: 'emailOtpSent' })
+})
+
+router.post('/verify-otp-email', async (req, res) => {
+  const { email, otpCode } = req.body
+  try {
+    const emailOtpCheck = await EmailOtp.findOne({ email: email, otp: otpCode })
+    if (!emailOtpCheck) {
+      res.json({ error: 'OTP verification failed' })
+      return
+    } else {
+      await EmailOtp.findByIdAndDelete({ _id: emailOtpCheck._id })
+      // Check if user with this emailn address exists
+      const user = await User.findOne({ emailAddress: email })
+      if (user) {
+        const token = jwt.sign({ userId: user._id }, devKeys.JwtSecret)
+        res.json({ token })
+        return
+      }
+      // Create user here
+      const newUser = new User({
+        emailAddress: email,
+        emailAddressVerified: true,
+        created: Date.now(),
+      })
+      await newUser.save()
+      const token = jwt.sign({ userId: newUser._id }, devKeys.JwtSecret)
+      res.json({ token })
+      return
+    }
+  } catch (error) {
+    console.error(error)
+    res.json({ error: 'Failed to verify OTP' })
+  }
 })
 
 module.exports = router
