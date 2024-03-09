@@ -178,4 +178,16 @@ router.post('/join-community', requireAuth, async (req, res) => {
   }
 })
 
+router.post('/fetch-community-members-list', requireAuth, async (req, res) => {
+  console.log(req.body)
+  res.json(req.body)
+  // try {
+  //   const community = await Community.find({ _user: req.user._id })
+  //   res.json(community)
+  // } catch (error) {
+  //   console.log(error)
+  //   return
+  // }
+})
+
 module.exports = router
