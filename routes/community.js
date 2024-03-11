@@ -171,23 +171,22 @@ router.post('/join-community', requireAuth, async (req, res) => {
       }
     }
   } catch (error) {
-    console.log(error)
-    res
-      .status(500)
-      .json({ error: 'An error occurred while joining the community.' })
+    res.json({ error: 'An error occurred while joining the community.' })
   }
 })
 
 router.post('/fetch-community-members-list', requireAuth, async (req, res) => {
-  console.log(req.body)
-  res.json(req.body)
-  // try {
-  //   const community = await Community.find({ _user: req.user._id })
-  //   res.json(community)
-  // } catch (error) {
-  //   console.log(error)
-  //   return
-  // }
+  const { _id } = req.body
+  try {
+    const users = await User.find({
+      community: {
+        $elemMatch: { communityId: _id },
+      },
+    })
+    res.json(users)
+  } catch (error) {
+    res.json('Internal Server Error')
+  }
 })
 
 module.exports = router
