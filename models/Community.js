@@ -10,10 +10,13 @@ const CommunitySchema = new Schema({
     type: String,
     required: true,
   },
-  adminId: {
-    type: String,
-    required: true,
-  },
+  adminId: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+  ],
   avatar: {
     type: String,
     default: '',

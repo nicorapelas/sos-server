@@ -20,13 +20,13 @@ router.post('/create', requireAuth, async (req, res) => {
   try {
     const nameCheck = await Community.find({ name })
     if (nameCheck.length > 0) {
-      res.json({ error: `The name "${name}", is already taken` })
+      res.json({ error: `The name "${name}" is already taken` })
       return
     }
     const community = new Community({
       _user: req.user._id,
       name,
-      adminId: req.user._id,
+      adminId: [req.user._id],
     })
     await community.save()
     const updatedUser = await User.findByIdAndUpdate(
@@ -36,7 +36,7 @@ router.post('/create', requireAuth, async (req, res) => {
           community: {
             name: community.name,
             communityId: community._id,
-            adminId: community.adminId,
+            isAdmin: true,
           },
         },
       },
@@ -46,9 +46,11 @@ router.post('/create', requireAuth, async (req, res) => {
       success: 'communityCreatedSuccefully',
       communityList: updatedUser.community,
     })
-    return
   } catch (error) {
-    console.log(error)
+    console.error(error)
+    res
+      .status(500)
+      .json({ error: 'An error occurred while creating the community' })
   }
 })
 

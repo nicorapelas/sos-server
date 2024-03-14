@@ -3,8 +3,8 @@ const Schema = mongoose.Schema
 
 const UserCommunitySchema = new Schema({
   name: String,
-  communityId: String,
-  adminId: String,
+  communityId: Schema.Types.ObjectId,
+  isAdmin: { type: Boolean, default: false },
 })
 
 module.exports = UserCommunitySchema
