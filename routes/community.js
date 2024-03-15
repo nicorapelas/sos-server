@@ -191,4 +191,9 @@ router.post('/fetch-community-members-list', requireAuth, async (req, res) => {
   }
 })
 
+router.post('/set-members-admin-status', requireAuth, async (req, res) => {
+  console.log(req.body)
+  res.json(req.body)
+})
+
 module.exports = router
