@@ -54,6 +54,7 @@ router.post('/create', requireAuth, async (req, res) => {
   }
 })
 
+//
 router.post('/fetch-selected', requireAuth, async (req, res) => {
   const { id } = req.body
   try {
@@ -65,17 +66,37 @@ router.post('/fetch-selected', requireAuth, async (req, res) => {
   }
 })
 
+// router.post(
+//   '/fetch-community-selected-admin',
+//   requireAuth,
+//   async (req, res) => {
+//     const { adminId } = req.body
+//     console.log(req.body)
+//     try {
+//       const user = await User.findById({ _id: adminId })
+//       res.json(user)
+//     } catch (error) {
+//       console.log(error)
+//       return
+//     }
+//   }
+// )
+
 router.post(
   '/fetch-community-selected-admin',
   requireAuth,
   async (req, res) => {
     const { adminId } = req.body
     try {
-      const user = await User.findById({ _id: adminId })
-      res.json(user)
+      if (Array.isArray(adminId) && adminId.length) {
+        const users = await User.find({ _id: { $in: adminId } })
+        res.json(users)
+      } else {
+        res.status(400).json({ error: 'Invalid adminId format' })
+      }
     } catch (error) {
       console.log(error)
-      return
+      res.status(500).json({ error: 'Internal server error' })
     }
   }
 )
@@ -192,8 +213,44 @@ router.post('/fetch-community-members-list', requireAuth, async (req, res) => {
 })
 
 router.post('/set-members-admin-status', requireAuth, async (req, res) => {
-  console.log(req.body)
-  res.json(req.body)
+  const { memberAdmin, memberId, communityId } = req.body
+  try {
+    const result = await User.updateOne(
+      {
+        _id: memberId,
+        'community.communityId': communityId,
+      },
+      {
+        $set: {
+          'community.$.isAdmin': memberAdmin,
+        },
+      }
+    )
+    if (memberAdmin) {
+      await Community.updateOne(
+        { _id: communityId },
+        { $addToSet: { adminId: memberId } }
+      )
+    }
+    if (!memberAdmin) {
+      await Community.updateOne(
+        { _id: communityId },
+        { $pull: { adminId: memberId } }
+      )
+    }
+    if (result.nModified === 0) {
+      return res.status(404).json({
+        message: 'User or community not found, or no update required.',
+      })
+    } else {
+      return res
+        .status(200)
+        .json({ message: 'Admin status updated successfully.' })
+    }
+  } catch (error) {
+    console.error('Error updating admin status:', error)
+    return res.status(500).json({ message: 'Internal Server Error' })
+  }
 })
 
 module.exports = router
