@@ -17,7 +17,7 @@ module.exports = (req, res, next) => {
     const { userId } = payload
     const user = await User.findById(userId)
     if (!user) {
-      res.json({ error: 'no user logged in' })
+      res.json({ error: 'noUserLogedIn' })
       return
     }
     req.user = user

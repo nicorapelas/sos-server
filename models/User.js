@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
+  mute: {
+    type: Boolean,
+    default: false,
+  },
   community: [UserCommunitySchema],
   created: {
     type: Date,

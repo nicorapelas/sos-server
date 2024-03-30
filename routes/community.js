@@ -54,7 +54,6 @@ router.post('/create', requireAuth, async (req, res) => {
   }
 })
 
-//
 router.post('/fetch-selected', requireAuth, async (req, res) => {
   const { id } = req.body
   try {
@@ -65,22 +64,6 @@ router.post('/fetch-selected', requireAuth, async (req, res) => {
     return
   }
 })
-
-// router.post(
-//   '/fetch-community-selected-admin',
-//   requireAuth,
-//   async (req, res) => {
-//     const { adminId } = req.body
-//     console.log(req.body)
-//     try {
-//       const user = await User.findById({ _id: adminId })
-//       res.json(user)
-//     } catch (error) {
-//       console.log(error)
-//       return
-//     }
-//   }
-// )
 
 router.post(
   '/fetch-community-selected-admin',
@@ -243,14 +226,21 @@ router.post('/set-members-admin-status', requireAuth, async (req, res) => {
         message: 'User or community not found, or no update required.',
       })
     } else {
-      return res
-        .status(200)
-        .json({ message: 'Admin status updated successfully.' })
+      const adminUsers = await User.find({
+        'community.communityId': communityId,
+        'community.isAdmin': true,
+      })
+      return res.status(200).json(adminUsers)
     }
   } catch (error) {
     console.error('Error updating admin status:', error)
     return res.status(500).json({ message: 'Internal Server Error' })
   }
+})
+
+router.post('/set-mute', requireAuth, async (req, res) => {
+  console.log(req.body)
+  res.json(req.body)
 })
 
 module.exports = router
