@@ -239,8 +239,20 @@ router.post('/set-members-admin-status', requireAuth, async (req, res) => {
 })
 
 router.post('/set-mute', requireAuth, async (req, res) => {
-  console.log(req.body)
-  res.json(req.body)
+  const { mute, memberId } = req.body
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      { _id: memberId },
+      {
+        mute,
+      },
+      { new: true }
+    )
+    res.json([updatedUser])
+  } catch (error) {
+    console.error('Error updating admin status:', error)
+    return res.status(500).json({ message: 'Internal Server Error' })
+  }
 })
 
 module.exports = router
