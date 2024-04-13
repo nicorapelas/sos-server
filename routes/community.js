@@ -255,4 +255,76 @@ router.post('/set-mute', requireAuth, async (req, res) => {
   }
 })
 
+// router.post('/exit-community', requireAuth, async (req, res) => {
+//   console.log(`hello world:`, req.body)
+//   const { communityId } = req.body
+//   try {
+//     const user = await User.findById(req.user._id)
+//     console.log(`user:`, user)
+//     if (!user) {
+//       res.json({ error: 'User not found' })
+//       return
+//     }
+//     const isMember = user.community.some(
+//       (community) => community.communityId === communityId
+//     )
+//     console.log(`isMember:`, isMember)
+//     if (!isMember) {
+//       res.json({ error: 'User is not a member of the specified community.' })
+//       return
+//     }
+//     const updatedUser = await User.findByIdAndUpdate(
+//       req.user._id,
+//       {
+//         $pull: {
+//           community: { communityId: communityId },
+//         },
+//       },
+//       { new: true }
+//     )
+//     console.log(`updatedUser:`, updatedUser)
+//     res.json({
+//       success: 'successfullyLeft',
+//       communityList: updatedUser.community,
+//     })
+//   } catch (error) {
+//     res.json({ error: 'An error occurred while leaving the community.' })
+//   }
+// })
+
+router.post('/exit-community', requireAuth, async (req, res) => {
+  const { communityId } = req.body
+  try {
+    const user = await User.findById(req.user._id)
+    if (!user) {
+      res.status(404).json({ error: 'User not found' })
+      return
+    }
+    const isMember = user.community.some(
+      (community) => community.communityId.toString() === communityId
+    )
+    if (!isMember) {
+      res.json({ error: 'User is not a member of this community.' })
+      return
+    }
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        $pull: {
+          community: {
+            communityId: communityId,
+          },
+        },
+      },
+      { new: true }
+    )
+    res.json({
+      success: 'successfullyLeft',
+      communityList: updatedUser.community,
+    })
+  } catch (error) {
+    res.json({ error: 'An error occurred while leaving the community.' })
+  }
+})
+
 module.exports = router
