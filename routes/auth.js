@@ -17,6 +17,7 @@ router.post('/request-otp-sms', async (req, res) => {
       .services(devKeys.twilioVerifySid)
       .verifications.create({ to: phoneNumber, channel: 'sms' })
     res.json({ message: 'OTP sent successfully', status: verification.status })
+    console.log(`verification:`, verification)
     return
   } catch (error) {
     console.error(error)
