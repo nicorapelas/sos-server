@@ -275,7 +275,20 @@ router.post('/exit-community', requireAuth, async (req, res) => {
     const isAdmin = community.adminId.some(
       (adminId) => adminId.toString() === req.user._id.toString()
     )
-    if (isAdmin) {
+    if (isAdmin && community.adminId.length === 1) {
+      const members = await User.find({
+        'community.communityId': communityId,
+        _id: { $ne: req.user._id },
+      })
+      if (members.length > 0) {
+        const newAdminId = members[0]._id
+        await Community.findByIdAndUpdate(communityId, {
+          $set: { adminId: [newAdminId] },
+        })
+      } else {
+        await Community.findByIdAndDelete(communityId)
+      }
+    } else if (isAdmin) {
       await Community.findByIdAndUpdate(communityId, {
         $pull: {
           adminId: req.user._id,
