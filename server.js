@@ -22,7 +22,7 @@ app.get('/events', sseMiddleware, (req, res) => {
 })
 
 // Route to receive data and broadcast:
-app.post('/trigger', express.json(), (req, res) => {
+app.post('/trigger', (req, res) => {
   console.log('Received trigger:', req.body)
   sendToAllClients(req.body)
   res.status(200).json({ message: 'Event triggered' })
