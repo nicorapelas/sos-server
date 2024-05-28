@@ -4,7 +4,6 @@ const Community = require('../models/Community')
 const User = require('../models/User')
 const CommunityInvite = require('../models/CommunityInvite')
 const requireAuth = require('../middlewares/requireAuth')
-const { handleSSE, broadcast } = require('../middlewares/sseHandler')
 
 router.get('/fetch', requireAuth, async (req, res) => {
   try {
