@@ -8,7 +8,7 @@ const socketIoSetup = (server) => {
   io.use(authenticateSocket) // Use the authentication middleware
 
   io.on('connection', (socket) => {
-    console.log('A user connected', socket.request.user.username)
+    console.log('A user connected:', socket.request.user.username)
 
     // Listen for 'message' events
     socket.on('message', async (data) => {
@@ -17,7 +17,7 @@ const socketIoSetup = (server) => {
 
       switch (event) {
         case 'panic':
-          console.log(`User panic`)
+          console.log('User panic triggered')
 
           try {
             // Find the user and their communities
@@ -36,13 +36,13 @@ const socketIoSetup = (server) => {
               'community.communityId': { $in: communityIds },
               'community.panicAlertUser': true,
             })
-            console.log(`usersInCommunities:`, usersInCommunities)
+            console.log('Users in communities:', usersInCommunities)
+
             // Broadcast the message to these users
+            const sockets = Array.from(io.sockets.sockets.values())
             usersInCommunities.forEach((communityUser) => {
-              console.log(`communityUser:`, communityUser)
-              const sockets = Array.from(io.sockets.sockets.values())
+              console.log('Community user:', communityUser)
               sockets.forEach((s) => {
-                console.log(`s.request.user:`, s.request.user)
                 if (
                   s.request.user &&
                   s.request.user._id.equals(communityUser._id)
@@ -57,17 +57,18 @@ const socketIoSetup = (server) => {
           break
 
         case 'membersNotification':
-          console.log(`Members notification`)
+          console.log('Members notification triggered')
           // Handle membersNotification event here
           break
 
         default:
+          console.log('Unknown event:', event)
           break
       }
     })
 
     socket.on('disconnect', () => {
-      console.log('A user disconnected')
+      console.log('A user disconnected:', socket.request.user.username)
     })
   })
 
