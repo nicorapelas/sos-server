@@ -318,4 +318,27 @@ router.post('/exit-community', requireAuth, async (req, res) => {
   }
 })
 
+router.post('/set-community-panic-alert', requireAuth, async (req, res) => {
+  const { _id } = req.user
+  const { communityId, panicAlertUser } = req.body
+  try {
+    const user = await User.findById(_id)
+    const userCommunity = user.community.find(
+      (community) => community.communityId.toString() === communityId
+    )
+    if (!userCommunity) {
+      return res.status(404).json({ error: 'Community not found' })
+    }
+    userCommunity.panicAlertUser = panicAlertUser
+    await user.save()
+    res.status(200).json({ message: 'Panic alert status updated successfully' })
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        error: 'An error occurred while updating user community panic alert.',
+      })
+  }
+})
+
 module.exports = router
