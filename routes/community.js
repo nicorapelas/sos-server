@@ -331,8 +331,13 @@ router.post('/set-community-panic-alert', requireAuth, async (req, res) => {
     }
     userCommunity.panicAlertUser = panicAlertUser
     await user.save()
-    res.status(200).json({ message: 'panicAlertStatusUpdatedSuccessfully' })
+    const updatedUser = await User.findById(_id)
+    res.json({
+      success: 'panicAlertStatusUpdatedSuccessfully',
+      communityList: updatedUser.community,
+    })
   } catch (error) {
+    console.error(error)
     res.status(500).json({
       error: 'An error occurred while updating user community panic alert.',
     })
