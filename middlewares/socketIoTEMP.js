@@ -9,13 +9,16 @@ const socketIoSetup = (server) => {
 
   io.on('connection', (socket) => {
     console.log('A user connected:', socket.request.user.username)
+
     // Listen for 'message' events
     socket.on('message', async (data) => {
-      console.log('data:', data)
+      console.log('Message received:', data)
       const { userId, event, message } = data
 
       switch (event) {
         case 'panic':
+          console.log('User panic triggered')
+
           try {
             // Find the user and their communities
             const user = await User.findById(userId).populate(
@@ -25,15 +28,20 @@ const socketIoSetup = (server) => {
               console.log(`User with ID ${userId} not found`)
               return
             }
+
             const communityIds = user.community.map((c) => c.communityId._id)
+
             // Find all users in the same communities with panicAlertUser: true
             const usersInCommunities = await User.find({
               'community.communityId': { $in: communityIds },
               'community.panicAlertUser': true,
             })
+            console.log('Users in communities:', usersInCommunities)
+
             // Broadcast the message to these users
             const sockets = Array.from(io.sockets.sockets.values())
             usersInCommunities.forEach((communityUser) => {
+              console.log('Community user:', communityUser)
               sockets.forEach((s) => {
                 if (
                   s.request.user &&
@@ -58,6 +66,7 @@ const socketIoSetup = (server) => {
           break
       }
     })
+
     socket.on('disconnect', () => {
       console.log('A user disconnected:', socket.request.user.username)
     })
