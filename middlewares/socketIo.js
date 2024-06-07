@@ -13,7 +13,6 @@ const socketIoSetup = (server) => {
     socket.on('message', async (data) => {
       console.log('data:', data)
       const { userId, event, message } = data
-
       switch (event) {
         case 'panic':
           try {
@@ -47,10 +46,38 @@ const socketIoSetup = (server) => {
             console.error('Error broadcasting panic message:', error)
           }
           break
-
         case 'membersNotification':
           console.log('Members notification triggered')
           // Handle membersNotification event here
+          try {
+            // Find the user and their communities
+            const user = await User.findById(userId).populate(
+              'community.communityId'
+            )
+            if (!user) {
+              console.log(`User with ID ${userId} not found`)
+              return
+            }
+            const communityIds = user.community.map((c) => c.communityId._id)
+            // Find all users in the same communities with panicAlertUser: true
+            const usersInCommunities = await User.find({
+              'community.communityId': { $in: communityIds },
+            })
+            // Broadcast the message to these users
+            const sockets = Array.from(io.sockets.sockets.values())
+            usersInCommunities.forEach((communityUser) => {
+              sockets.forEach((s) => {
+                if (
+                  s.request.user &&
+                  s.request.user._id.equals(communityUser._id)
+                ) {
+                  s.emit('message', { event, message })
+                }
+              })
+            })
+          } catch (error) {
+            console.error('Error broadcasting panic message:', error)
+          }
           break
 
         default:
