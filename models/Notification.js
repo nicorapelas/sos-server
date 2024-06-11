@@ -1,5 +1,7 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
+const NotificationCommunityListSchema =
+  require('./NotificationCommunityList').schema
 
 const NotificationSchema = new Schema({
   _user: {
@@ -16,6 +18,7 @@ const NotificationSchema = new Schema({
     type: Date,
     default: Date.now,
   },
+  communityList: [NotificationCommunityListSchema],
 })
 
 module.exports = mongoose.model('Notification', NotificationSchema)
